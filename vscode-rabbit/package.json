@@ -1,0 +1,73 @@
+{
+  "name": "rabbit-language",
+  "displayName": "Rabbit Language",
+  "description": "Syntax highlighting for the Rabbit programming language (.rab)",
+  "version": "0.10.3",
+  "publisher": "rabbit-lang",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "rabbit",
+        "aliases": [
+          "Rabbit",
+          "rabbit"
+        ],
+        "extensions": [
+          ".rab"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "rabbit",
+        "scopeName": "source.rabbit",
+        "path": "./syntaxes/rabbit.tmLanguage.json"
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "rabbit-icons",
+        "label": "Rabbit Icons (all languages)",
+        "path": "./icons/rabbit-icon-theme.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "rabbit",
+        "path": "./snippets/rabbit.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "rabbit.run",
+        "title": "Rabbit: Run this file"
+      },
+      {
+        "command": "rabbit.check",
+        "title": "Rabbit: Check this file for errors"
+      }
+    ],
+    "configuration": {
+      "title": "Rabbit",
+      "properties": {
+        "rabbit.path": {
+          "type": "string",
+          "default": "rabbit",
+          "description": "The rabbit program to run (for example /usr/local/bin/rabbit)."
+        }
+      }
+    }
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:rabbit"
+  ]
+}
