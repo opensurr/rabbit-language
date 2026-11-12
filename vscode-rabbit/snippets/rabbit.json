@@ -1,0 +1,251 @@
+{
+  "Function": {
+    "prefix": "func",
+    "body": [
+      "func ${1:name}(${2:args}) {",
+      "  ${3:return}",
+      "}"
+    ],
+    "description": "Define a function"
+  },
+  "If": {
+    "prefix": "if",
+    "body": [
+      "if (${1:condition}) {",
+      "  ${2}",
+      "}"
+    ],
+    "description": "If statement"
+  },
+  "If else": {
+    "prefix": "ifelse",
+    "body": [
+      "if (${1:condition}) {",
+      "  ${2}",
+      "} else {",
+      "  ${3}",
+      "}"
+    ],
+    "description": "If and else"
+  },
+  "Elseif chain": {
+    "prefix": "elseif",
+    "body": [
+      "if (${1:condition}) {",
+      "  ${2}",
+      "} elseif (${3:condition}) {",
+      "  ${4}",
+      "} else {",
+      "  ${5}",
+      "}"
+    ],
+    "description": "If, elseif and else"
+  },
+  "Numeric for": {
+    "prefix": "for",
+    "body": [
+      "for ${1:i} = ${2:1}, ${3:10} {",
+      "  ${4}",
+      "}"
+    ],
+    "description": "Count from start to stop (inclusive)"
+  },
+  "For in array": {
+    "prefix": "forin",
+    "body": [
+      "for ${1:item} in ${2:list} {",
+      "  ${3:print(item)}",
+      "}"
+    ],
+    "description": "Loop over the values of an array, table or text"
+  },
+  "For in with index": {
+    "prefix": "forkv",
+    "body": [
+      "for ${1:key}, ${2:value} in ${3:data} {",
+      "  ${4:print(key, value)}",
+      "}"
+    ],
+    "description": "Loop over keys and values"
+  },
+  "While": {
+    "prefix": "while",
+    "body": [
+      "while (${1:condition}) {",
+      "  ${2}",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "Repeat": {
+    "prefix": "repeat",
+    "body": [
+      "repeat {",
+      "  ${1}",
+      "} until (${2:condition})"
+    ],
+    "description": "Repeat until"
+  },
+  "Table": {
+    "prefix": "table",
+    "body": [
+      "let ${1:name} = {${2:key}: ${3:value}}"
+    ],
+    "description": "Create a table"
+  },
+  "Array": {
+    "prefix": "array",
+    "body": [
+      "let ${1:list} = [${2}]"
+    ],
+    "description": "Create an array"
+  },
+  "pcall": {
+    "prefix": "pcall",
+    "body": [
+      "let ${1:result} = pcall(func() {",
+      "  ${2}",
+      "})",
+      "if (${1:result}.ok) {",
+      "  print(${1:result}.value)",
+      "} else {",
+      "  print(${1:result}.error)",
+      "}"
+    ],
+    "description": "Catch errors"
+  },
+  "Input": {
+    "prefix": "input",
+    "body": [
+      "let ${1:answer} = input(\"${2:Question? }\")"
+    ],
+    "description": "Ask the user"
+  },
+  "Require module": {
+    "prefix": "require",
+    "body": [
+      "let ${1:mod} = require(\"${2:module}\")"
+    ],
+    "description": "Load another Rabbit file"
+  },
+  "Web server": {
+    "prefix": "webapp",
+    "body": [
+      "let web = getlib(\"web\")",
+      "let app = web.app()",
+      "",
+      "app.get(\"/\", func(req) {",
+      "  return web.html(\"<h1>${1:Hello}</h1>\")",
+      "})",
+      "",
+      "app.listen(${2:8080})"
+    ],
+    "description": "Start a web server"
+  },
+  "HTML page": {
+    "prefix": "htmlpage",
+    "body": [
+      "let html = getlib(\"html\")",
+      "let page = html.page({",
+      "  title = \"${1:Title}\",",
+      "  body = [html.h1({}, \"${2:Heading}\")]",
+      "})",
+      "html.write(\"${3:index.html}\", page)"
+    ],
+    "description": "Write an HTML page"
+  },
+  "Module file": {
+    "prefix": "module",
+    "body": [
+      "func ${1:name}(${2:args}) {",
+      "  ${3}",
+      "}",
+      "",
+      "return {${1:name} = ${1:name}}"
+    ],
+    "description": "A module that returns its functions"
+  },
+  "Test check": {
+    "prefix": "check",
+    "body": [
+      "check(\"${1:name}\", ${2:got}, ${3:want})"
+    ],
+    "description": "Call a check helper"
+  },
+  "GUI window": {
+    "prefix": "gui",
+    "body": [
+      "let gui = getlib(\"rabui\").gui",
+      "gui.window(\"${1:Title}\", ${2:420}, ${3:300})",
+      "let ${4:out} = gui.label(\"${5:Hello}\")",
+      "gui.button(\"${6:Click}\", func(g) {",
+      "  g.set_text(${4:out}, \"${7:Clicked!}\")",
+      "})",
+      "gui.run(8770)"
+    ],
+    "description": "A window with a label and a button (like tkinter)"
+  },
+  "GUI text box": {
+    "prefix": "guientry",
+    "body": [
+      "let ${1:box} = gui.entry(\"${2:Type here}\")",
+      "gui.button(\"${3:Show}\", func(g) {",
+      "  print(g.get(${1:box}))",
+      "})"
+    ],
+    "description": "Text box with a button that reads it"
+  },
+  "Mix Python call": {
+    "prefix": "pycall",
+    "body": [
+      "let langs = getlib(\"bridge\")",
+      "let ${1:result} = langs.python.call(\"${2:sum(values)}\", {values = [${3:1, 2, 3}]})",
+      "print(${1:result})"
+    ],
+    "description": "Run a Python expression with Rabbit values"
+  },
+  "Mix Node.js call": {
+    "prefix": "nodecall",
+    "body": [
+      "let langs = getlib(\"bridge\")",
+      "let ${1:result} = langs.node.call(\"${2:bonus * 2}\", {bonus = ${3:21}})",
+      "print(${1:result})"
+    ],
+    "description": "Run a JavaScript expression with Rabbit values"
+  },
+  "Mix Python code": {
+    "prefix": "pyeval",
+    "body": [
+      "let langs = getlib(\"bridge\")",
+      "print(langs.python.eval(\"${1:print(name.upper())}\", {name = \"${2:rabbit}\"}))"
+    ],
+    "description": "Run Python code that sees Rabbit variables"
+  },
+  "Global variable": {
+    "prefix": "setglobal",
+    "body": [
+      "setglobal(\"${1:name}\", ${2:value})",
+      "print(getglobal(\"${1:name}\"))"
+    ],
+    "description": "Create and read a global variable"
+  },
+  "Web app": {
+    "prefix": "webapp2",
+    "body": [
+      "let web = getlib(\"web\")",
+      "let app = web.app()",
+      "app.get(\"/hello/:name\", func(req) {",
+      "  return web.json({hello = req.params.name})",
+      "})",
+      "app.listen(${1:8080})"
+    ],
+    "description": "JSON web route with a parameter"
+  },
+  "Block comment": {
+    "prefix": "--[[",
+    "body": [
+      "--[[ ${1:comment} ]]"
+    ],
+    "description": "Multi-line comment"
+  }
+}
