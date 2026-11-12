@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Language="en-US" Id="rabbit-language" Version="0.10.3" Publisher="rabbit-lang" />
+    <DisplayName>Rabbit Language</DisplayName>
+    <Description xml:space="preserve">Syntax highlighting for the Rabbit programming language (.rab)</Description>
+    <Categories>Programming Languages</Categories>
+    <Icon>icon.png</Icon>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Code" />
+  </Installation>
+  <Dependencies />
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
+    <Asset Type="Microsoft.VisualStudio.Services.Icon.Default" Path="extension/icon.png" Addressable="true" />
+  </Assets>
+</PackageManifest>
