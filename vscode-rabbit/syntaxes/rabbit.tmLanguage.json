@@ -1,0 +1,172 @@
+{
+  "name": "Rabbit",
+  "scopeName": "source.rabbit",
+  "fileTypes": [
+    "rab"
+  ],
+  "patterns": [
+    {
+      "include": "#block-comment"
+    },
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#func-definition"
+    },
+    {
+      "include": "#libraries"
+    },
+    {
+      "include": "#builtins"
+    },
+    {
+      "include": "#method-call"
+    },
+    {
+      "include": "#field"
+    },
+    {
+      "include": "#function-call"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "block-comment": {
+      "name": "comment.block.rabbit",
+      "begin": "--\\[\\[",
+      "end": "\\]\\]"
+    },
+    "line-comment": {
+      "name": "comment.line.double-dash.rabbit",
+      "match": "--.*$"
+    },
+    "strings": {
+      "name": "string.quoted.double.rabbit",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.rabbit",
+          "match": "\\\\[\\\\\"nrt]"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.rabbit",
+          "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.rabbit",
+          "match": "\\b(true|false|nil)\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.declaration.rabbit",
+          "match": "\\b(let|func)\\b"
+        },
+        {
+          "name": "keyword.control.rabbit",
+          "match": "\\b(if|elseif|else|while|repeat|until|for|in|do|return|break|continue)\\b"
+        },
+        {
+          "name": "keyword.operator.word.rabbit",
+          "match": "\\b(and|or|not)\\b"
+        }
+      ]
+    },
+    "func-definition": {
+      "match": "\\b(func)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "keyword.declaration.rabbit"
+        },
+        "2": {
+          "name": "entity.name.function.rabbit"
+        }
+      }
+    },
+    "libraries": {
+      "patterns": [
+        {
+          "name": "support.class.library.rabbit",
+          "match": "\\b(table|string|math|os|io|fs|http|net|web|json|html|rabui|ui|gui|bridge|langs|python|node|lua)\\b(?=\\s*[.:])"
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.rabbit",
+          "match": "\\b(print|input|type|tostring|tonumber|error|assert|pairs|ipairs|pcall|load|require|getlib|rawget|rawset|rawequal|wait|getglobal|setglobal|hasglobal|getgenv|setgenv|globals)\\b(?=\\s*\\()"
+        }
+      ]
+    },
+    "method-call": {
+      "patterns": [
+        {
+          "name": "entity.name.function.method.rabbit",
+          "match": "(?<=[.:])\\s*[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()"
+        }
+      ]
+    },
+    "field": {
+      "patterns": [
+        {
+          "name": "variable.other.property.rabbit",
+          "match": "(?<=\\.)[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+    "function-call": {
+      "patterns": [
+        {
+          "name": "entity.name.function.rabbit",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.rabbit",
+          "match": "==|~=|!=|<=|>=|\\.\\.|\\?\\?|\\+=|-=|\\*=|/=|[-+*/%=<>#]"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.rabbit",
+          "match": "[{}\\[\\](),;:.]"
+        }
+      ]
+    }
+  }
+}
