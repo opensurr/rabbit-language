@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1080 1080">
+  <defs>
+    <g id="ear">
+      <path d="M290 195 C255 265 248 390 300 462 C345 525 392 548 400 588 L482 510 C472 420 462 300 410 255 C372 222 325 205 290 195 Z" fill="#C1654A"/>
+      <path d="M308 275 C332 332 392 392 422 432 C446 476 446 522 428 572 C390 532 342 482 322 420 C300 360 300 302 308 275 Z" fill="#953F2A"/>
+    </g>
+    <g id="eye">
+      <path d="M410 652 C440 665 475 700 487 742 C455 725 425 720 415 700 C408 685 408 660 410 652 Z" fill="#FFFFFF"/>
+    </g>
+  </defs>
+  <use xlink:href="#ear"/>
+  <use xlink:href="#ear" transform="matrix(-1 0 0 1 1080 0)"/>
+  <path d="M482 510 C512 494 572 494 600 510 L680 585 C700 620 735 660 735 690 C735 740 690 770 620 810 C580 835 540 850 500 835 C450 815 400 790 360 750 C340 725 345 700 345 690 C350 650 380 615 400 585 Z" fill="#C1654A"/>
+  <use xlink:href="#eye"/>
+  <use xlink:href="#eye" transform="matrix(-1 0 0 1 1080 0)"/>
+  <path d="M510 775 L570 775 L540 802 Z" fill="#EE7350"/>
+  <path d="M505 812 Q515 822 530 822 L552 822" fill="none" stroke="#7A0000" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="566" cy="808" r="14" fill="#FF4040"/>
+</svg>
