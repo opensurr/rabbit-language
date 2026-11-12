@@ -1,15 +1,20 @@
+```markdown
 # Rabbit
 
 Rabbit is a small, readable programming language with an interpreter written in C.
-It takes ideas from Lua (short syntax, `..` for text, `--` comments, Lua-style
-patterns) and from JavaScript (braces, `func`, `??`, `+=`).
+It borrows ideas from Lua — short syntax, `..` for string concatenation, `--`
+comments, and Lua-style patterns — and from JavaScript — braces, `func`, `??`,
+and `+=`.
 
-```
+```rabbit
 let user = {name = "Bunny", age = 16}
+
 func greet(who) {
   return "Hello, " .. who .. "!"
 }
+
 print(greet(user.name))
+
 for key, value in user {
   print(key, value)
 }
@@ -17,46 +22,71 @@ for key, value in user {
 
 ## Build and install
 
-Linux, macOS, and BSD (on Windows, use WSL).
+Rabbit works on Linux, macOS, and BSD. On Windows, use WSL.
 
-    make
-    sudo make install
+```sh
+make
+sudo make install
+```
 
-This installs `rabbit`, `rabrun`, and `rabget`, plus the libraries in `lib/`.
+This installs `rabbit`, `rabrun`, and `rabget`, along with the libraries in `lib/`.
 
-    rabbit program.rab        run a program
-    rabbit --check program.rab   report syntax errors only
-    make test                 run the test suite
+```sh
+rabbit program.rab              # run a program
+rabbit --check program.rab      # report syntax errors only
+make test                       # run the test suite
+```
 
 ## Libraries
 
-Loaded with `getlib("name")`:
+Load a library with `getlib("name")`:
 
-- `web`: routes, JSON responses, static files (uses `net.serve`)
-- `json`: encode and decode JSON
-- `html`: build HTML pages and CSS
-- `bridge`: run Python, Node.js, and Lua code, with shared values
-- `rabui`: terminal interface helpers, and `rabui.gui` for a browser window
+- **`web`** — routes, JSON responses, and static files (uses `net.serve`)
+- **`json`** — encode and decode JSON
+- **`html`** — build HTML pages and CSS
+- **`bridge`** — run Python, Node.js, and Lua code with shared values
+- **`rabui`** — terminal interface helpers, plus `rabui.gui` for a browser window
 
 ## Packages
 
-`rabget` installs Python packages into a private environment in `~/.rabbit/venv`,
-so the system Python is not changed.
+`rabget` installs Python packages into a private environment at `~/.rabbit/venv`,
+so your system Python is left untouched.
 
-    rabget requests
-    rabget node axios
-    rabget lua dkjson
+```sh
+rabget requests
+rabget node axios
+rabget lua dkjson
+```
 
 ## Editor support
 
 `vscode-rabbit/` is a VS Code extension with syntax highlighting, live error
 underlines, type-aware hover and completions, snippets, and an icon theme.
-Build it with `make vsix` and install `rabbit.vsix` in VS Code.
+
+Build it with:
+
+```sh
+make vsix
+```
+
+Then install `rabbit.vsix` in VS Code.
 
 ## Security
+
+**Rabbit is not a sandbox.** Scripts run with the same permissions as the user
+who launches them. They can read and write files, execute system commands, and
+make network requests.
+
+**Do not run Rabbit scripts you do not trust.** Unauthorized users may abuse
+Rabbit scripts to gain full access to your system, so review code carefully and
+scan anything suspicious. Reporting issues or vulnerabilities helps keep you and
+others safe.
 
 Read [SECURITY.md](SECURITY.md) before running programs you did not write.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
+```
+
+Key improvements: clearer intro, consistent bullet formatting, corrected typos like “carefull,” and a stronger but still accurate security section that does **not** claim Rabbit is secure or sandboxed.
