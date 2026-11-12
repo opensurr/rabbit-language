@@ -1,0 +1,100 @@
+
+let ui = {}
+let ESC = string.char(27) .. "["
+
+let colors = {
+  reset = "0", bold = "1", dim = "2", underline = "4",
+  black = "30", red = "31", green = "32", yellow = "33",
+  blue = "34", magenta = "35", cyan = "36", white = "37"
+}
+
+ui.clear = func() {
+  io.write(ESC .. "2J" .. ESC .. "H")
+}
+
+ui.move = func(row, col) {
+  io.write(ESC .. row .. ";" .. col .. "H")
+}
+
+ui.color = func(name) {
+  io.write(ESC .. (colors[name] or "0") .. "m")
+}
+
+ui.reset = func() {
+  io.write(ESC .. "0m")
+}
+
+ui.text = func(row, col, text) {
+  ui.move(row, col)
+  io.write(text)
+}
+
+ui.title = func(text) {
+  io.write(ESC .. "1m" .. text .. ESC .. "0m\n")
+}
+
+ui.box = func(row, col, width, height, title) {
+  ui.text(row, col, "+" .. string.rep("-", width - 2) .. "+")
+  for r = 1, height - 2 {
+    ui.text(row + r, col, "|" .. string.rep(" ", width - 2) .. "|")
+  }
+  ui.text(row + height - 1, col, "+" .. string.rep("-", width - 2) .. "+")
+  if (title ~= nil) {
+    ui.text(row, col + 2, " " .. title .. " ")
+  }
+}
+
+ui.progress = func(row, col, width, percent) {
+  let filled = math.floor(width * percent / 100)
+  ui.text(row, col, "[" .. string.rep("#", filled) .. string.rep(" ", width - filled) .. "]")
+}
+
+ui.cursor = func(show) {
+  if (show) {
+    io.write(ESC .. "?25h")
+  } else {
+    io.write(ESC .. "?25l")
+  }
+}
+
+ui.size = func() {
+  let out = os.capture("stty size")
+  if (out == nil) {
+    return {rows = 24, cols = 80}
+  }
+  let parts = string.split(string.trim(out), " ")
+  return {rows = tonumber(parts[0]) or 24, cols = tonumber(parts[1]) or 80}
+}
+
+ui.raw_on = func() {
+  os.execute("stty -icanon -echo min 1")
+}
+
+ui.raw_off = func() {
+  os.execute("stty icanon echo")
+}
+
+ui.key = func() {
+  return io.getchar()
+}
+
+ui.prompt = func(text) {
+  io.write(text)
+  return io.read()
+}
+
+ui.menu = func(title, items) {
+  ui.title(title)
+  for i, item in items {
+    io.write("  " .. (i + 1) .. ") " .. item .. "\n")
+  }
+  let choice = tonumber(io.read())
+  if (choice == nil or choice < 1 or choice > #items) {
+    return nil
+  }
+  return choice - 1
+}
+
+ui.gui = require("rabui_gui")
+
+return ui

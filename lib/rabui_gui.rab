@@ -1,0 +1,152 @@
+
+let web = getlib("web")
+let json = getlib("json")
+
+let SHELL = "<!doctype html>\n<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>\n<title>Rabbit</title>\n<style>\nbody{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:#f6f1f8;color:#1d1b20;margin:0;padding:20px}\n#app{background:#fff;border-radius:16px;padding:18px;max-width:480px;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,.2)}\nh1{font-size:20px;margin:0 0 12px}\n.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}\n.col{display:flex;flex-direction:column;gap:10px}\nbutton{padding:9px 18px;border-radius:20px;border:0;background:#6750a4;color:#fff;font-size:15px;cursor:pointer}\nbutton:hover{background:#7d66c0}\ninput{flex:1;min-width:160px;padding:9px 14px;border:1px solid #79747e;border-radius:12px;font-size:15px}\n.label{font-size:16px}\n.err{color:#b3261e;background:#f9dedc;border-radius:10px;padding:8px 12px}\n</style></head>\n<body><div id='app'><h1 id='title'></h1><div id='error'></div><div id='root' class='col'></div></div>\n<script>\nvar state = null;\nfunction make(tag, cls, text) {\n  var e = document.createElement(tag);\n  if (cls) { e.className = cls; }\n  if (text !== undefined && text !== null) { e.textContent = text; }\n  return e;\n}\nfunction collect() {\n  var values = {};\n  var inputs = document.querySelectorAll('input[data-id]');\n  for (var i = 0; i < inputs.length; i++) { values[inputs[i].getAttribute('data-id')] = inputs[i].value; }\n  return values;\n}\nfunction build(node) {\n  if (node.kind === 'label') { return make('div', 'label', node.text); }\n  if (node.kind === 'button') {\n    var b = make('button', '', node.text);\n    b.setAttribute('data-id', node.id);\n    b.onclick = function () { send(node.id); };\n    return b;\n  }\n  if (node.kind === 'entry') {\n    var field = document.createElement('input');\n    field.setAttribute('data-id', node.id);\n    field.placeholder = node.placeholder || '';\n    field.value = (state.values && state.values[node.id]) || '';\n    field.onkeydown = function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); send(null); } };\n    return field;\n  }\n  var box = make('div', node.kind === 'row' ? 'row' : 'col');\n  for (var k = 0; k < node.children.length; k++) { box.appendChild(build(node.children[k])); }\n  return box;\n}\nfunction render() {\n  document.title = state.title || 'Rabbit';\n  document.getElementById('title').textContent = state.title || '';\n  document.getElementById('app').style.maxWidth = (state.width || 480) + 'px';\n  var err = document.getElementById('error');\n  err.innerHTML = '';\n  if (state.error) { err.appendChild(make('div', 'err', state.error)); }\n  var root = document.getElementById('root');\n  root.innerHTML = '';\n  for (var i = 0; i < state.tree.length; i++) { root.appendChild(build(state.tree[i])); }\n}\nfunction send(id) {\n  var body = {values: collect()};\n  if (id !== null) { body.id = id; }\n  fetch('/event', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})\n    .then(function (r) { return r.json(); })\n    .then(function (data) { state = data; render(); })\n    .catch(function () {\n      var err = document.getElementById('error');\n      err.innerHTML = '';\n      err.appendChild(make('div', 'err', 'Lost the connection to the Rabbit program.'));\n    });\n}\nfetch('/state').then(function (r) { return r.json(); }).then(function (data) { state = data; render(); });\n</script></body></html>\n"
+
+let gui = {}
+let title = "Rabbit"
+let width = 480
+let height = 360
+let tree = []
+let stack = [tree]
+let handlers = {}
+let values = {}
+let last_error = ""
+let counter = 0
+
+func current() {
+  return stack[#stack - 1]
+}
+
+func add(node) {
+  current():push(node)
+}
+
+func next_id() {
+  counter += 1
+  return "w" .. counter
+}
+
+func find_node(list, id) {
+  for node in list {
+    if (node.id == id) {
+      return node
+    }
+    if (node.children ~= nil) {
+      let found = find_node(node.children, id)
+      if (found ~= nil) {
+        return found
+      }
+    }
+  }
+  return nil
+}
+
+func snapshot() {
+  return {title = title, width = width, height = height, tree = tree, values = values, error = last_error}
+}
+
+gui.window = func(t, w, h) {
+  title = tostring(t)
+  width = w or 480
+  height = h or 360
+}
+
+gui.label = func(text) {
+  let id = next_id()
+  add({kind = "label", id = id, text = tostring(text)})
+  return id
+}
+
+gui.button = func(text, callback) {
+  let id = next_id()
+  handlers[id] = callback
+  add({kind = "button", id = id, text = tostring(text)})
+  return id
+}
+
+gui.entry = func(placeholder) {
+  let id = next_id()
+  values[id] = ""
+  add({kind = "entry", id = id, placeholder = placeholder or "", value = ""})
+  return id
+}
+
+gui.row = func(build) {
+  let node = {kind = "row", id = next_id(), children = []}
+  add(node)
+  stack:push(node.children)
+  build()
+  stack:pop()
+  return node.id
+}
+
+gui.column = func(build) {
+  let node = {kind = "column", id = next_id(), children = []}
+  add(node)
+  stack:push(node.children)
+  build()
+  stack:pop()
+  return node.id
+}
+
+gui.get = func(id) {
+  return values[id]
+}
+
+gui.set_text = func(id, text) {
+  let node = find_node(tree, id)
+  if (node == nil) {
+    return false
+  }
+  if (node.kind == "entry") {
+    values[id] = tostring(text)
+  } else {
+    node.text = tostring(text)
+  }
+  return true
+}
+
+gui.run = func(port) {
+  let p = port or 8770
+  let url = "http://127.0.0.1:" .. p .. "/"
+  let app = web.app()
+
+  app.get("/", func(req) {
+    return web.html(SHELL)
+  })
+
+  app.get("/state", func(req) {
+    return web.json(snapshot())
+  })
+
+  app.post("/event", func(req) {
+    let parsed = pcall(func() {
+      return json.decode(req.body)
+    })
+    if (parsed.ok and type(parsed.value) == "table") {
+      for k, v in parsed.value.values or {} {
+        values[k] = v
+      }
+      let id = parsed.value.id
+      if (id ~= nil and handlers[id] ~= nil) {
+        let result = pcall(func() {
+          handlers[id](gui)
+        })
+        if (result.ok) {
+          last_error = ""
+        } else {
+          last_error = string.gsub(result.error, "^.-error: ", "")
+        }
+      }
+    }
+    return web.json(snapshot())
+  })
+
+  print("Rabbit GUI is running at " .. url .. "   (press Ctrl+C to stop)")
+  os.execute("(xdg-open '" .. url .. "' || open '" .. url .. "') >/dev/null 2>&1 &")
+  app.listen(p)
+}
+
+return gui

@@ -1,0 +1,124 @@
+
+let web = {}
+let json = getlib("json")
+
+let segments = func(path) {
+  let out = []
+  for part in string.split(path, "/") {
+    if (part ~= "") {
+      out:push(part)
+    }
+  }
+  return out
+}
+
+let match_route = func(pattern, path) {
+  let want = segments(pattern)
+  let got = segments(path)
+  let params = {}
+  for i, part in want {
+    if (part == "*") {
+      let rest = []
+      for j = i, #got - 1 {
+        rest:push(got[j])
+      }
+      params["*"] = table.concat(rest, "/")
+      return params
+    }
+    if (i >= #got) {
+      return nil
+    }
+    if (string.sub(part, 0, 1) == ":") {
+      params[string.sub(part, 1)] = got[i]
+    } elseif (part ~= got[i]) {
+      return nil
+    }
+  }
+  if (#want ~= #got) {
+    return nil
+  }
+  return params
+}
+
+let mime_for = func(name) {
+  if (string.ends_with(name, ".html")) { return "text/html; charset=utf-8" }
+  if (string.ends_with(name, ".css")) { return "text/css; charset=utf-8" }
+  if (string.ends_with(name, ".js")) { return "application/javascript; charset=utf-8" }
+  if (string.ends_with(name, ".json")) { return "application/json; charset=utf-8" }
+  if (string.ends_with(name, ".txt")) { return "text/plain; charset=utf-8" }
+  if (string.ends_with(name, ".svg")) { return "image/svg+xml" }
+  return "application/octet-stream"
+}
+
+web.html = func(text) {
+  return {status = 200, body = text, type = "text/html; charset=utf-8"}
+}
+
+web.text = func(text) {
+  return {status = 200, body = text, type = "text/plain; charset=utf-8"}
+}
+
+web.json = func(value) {
+  return {status = 200, body = json.encode(value), type = "application/json; charset=utf-8"}
+}
+
+web.redirect = func(location) {
+  return {status = 302, body = "", headers = {Location = location}}
+}
+
+web.app = func() {
+  let app = {routes = []}
+
+  app.add = func(method, pattern, handler) {
+    app.routes:push({method = method, pattern = pattern, handler = handler})
+  }
+  app.get = func(pattern, handler) {
+    app.add("GET", pattern, handler)
+  }
+  app.post = func(pattern, handler) {
+    app.add("POST", pattern, handler)
+  }
+
+  app.static = func(prefix, folder) {
+    app.get(prefix .. "/*", func(req) {
+      let name = req.params["*"]
+      if (string.find(name, "..", 0, true) ~= nil) {
+        return {status = 403, body = "Forbidden"}
+      }
+      let content = fs.read(folder .. "/" .. name)
+      if (content == nil) {
+        return {status = 404, body = "Not found"}
+      }
+      return {status = 200, body = content, type = mime_for(name)}
+    })
+  }
+
+  app.handle = func(req) {
+    let path_matched = false
+    for r in app.routes {
+      let params = match_route(r.pattern, req.path)
+      if (params ~= nil) {
+        if (r.method == req.method) {
+          req.params = params
+          return r.handler(req)
+        }
+        path_matched = true
+      }
+    }
+    if (path_matched) {
+      return {status = 405, body = "Method not allowed"}
+    }
+    return {status = 404, body = "Not found"}
+  }
+
+  app.listen = func(port, host, max_requests) {
+    if (max_requests ~= nil) {
+      return net.serve(port, app.handle, host or "127.0.0.1", max_requests)
+    }
+    return net.serve(port, app.handle, host or "127.0.0.1")
+  }
+
+  return app
+}
+
+return web

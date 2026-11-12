@@ -1,0 +1,186 @@
+
+let bridge = {}
+let json = getlib("json")
+let home = os.getenv("HOME") or "."
+let tmpdir = os.getenv("TMPDIR") or "/tmp"
+
+let shq = func(s) {
+  return "'" .. string.replace(s, "'", "'\\''") .. "'"
+}
+
+let unique = func(ext) {
+  let made = os.capture("mktemp " .. shq(tmpdir .. "/rabbit.XXXXXXXX"))
+  if (made == nil) {
+    error("could not create a temporary file in " .. tmpdir)
+  }
+  let base = string.trim(made)
+  let path = base .. ext
+  os.execute("mv " .. shq(base) .. " " .. shq(path))
+  return path
+}
+
+let run = func(cmd) {
+  let outfile = unique(".out")
+  let errfile = unique(".err")
+  let code = os.execute(cmd .. " >" .. shq(outfile) .. " 2>" .. shq(errfile))
+  let result = {code = code, out = fs.read(outfile) or "", err = fs.read(errfile) or ""}
+  fs.remove(outfile)
+  fs.remove(errfile)
+  return result
+}
+
+let check = func(r, name, hint) {
+  if (r.code == nil or r.code == 127) {
+    error(name .. " is not installed on this computer. " .. hint)
+  }
+  if (r.code ~= 0) {
+    error(name .. " reported an error:\n" .. r.err)
+  }
+
+}
+
+let last_line = func(text) {
+  let parts = string.split(text, "\n")
+  return parts[#parts - 1] or ""
+}
+
+let python_inject = func(vars) {
+  let file = unique(".json")
+  fs.write(file, json.encode(vars))
+  return {file = file, prelude = "import json as _rabbit_json\nglobals().update(_rabbit_json.load(open(" .. shq(file) .. ")))"}
+}
+
+let node_inject = func(vars) {
+  let file = unique(".json")
+  fs.write(file, json.encode(vars))
+  return {file = file, prelude = "Object.assign(globalThis, JSON.parse(require('fs').readFileSync(" .. shq(file) .. ", 'utf8')));"}
+}
+
+let lua_escape = func(s) {
+  s = string.replace(s, "\\", "\\\\")
+  s = string.replace(s, "\"", "\\\"")
+  s = string.replace(s, "\n", "\\n")
+  s = string.replace(s, "\r", "\\r")
+  return s
+}
+
+let lua_literal = func(v) {
+  let t = type(v)
+  if (t == "nil") {
+    return "nil"
+  } elseif (t == "boolean" or t == "number") {
+    return tostring(v)
+  } elseif (t == "string") {
+    return "\"" .. lua_escape(v) .. "\""
+  } elseif (t == "array") {
+    let parts = []
+    for item in v {
+      parts:push(lua_literal(item))
+    }
+    return "{" .. table.concat(parts, ", ") .. "}"
+  } elseif (t == "table") {
+    let parts = []
+    for k, item in v {
+      parts:push("[\"" .. lua_escape(tostring(k)) .. "\"] = " .. lua_literal(item))
+    }
+    return "{" .. table.concat(parts, ", ") .. "}"
+  }
+  error("a " .. t .. " value cannot be sent to Lua")
+}
+
+let lua_inject = func(vars) {
+  let lines = []
+  for k, v in vars {
+    lines:push("_G[\"" .. lua_escape(tostring(k)) .. "\"] = " .. lua_literal(v))
+  }
+  return {file = nil, prelude = table.concat(lines, "\n")}
+}
+
+let make_lang = func(name, command, ext, hint, check_arg, inject, wrap) {
+  let lang = {}
+  lang.name = name
+
+  lang.eval = func(code, vars) {
+    let script = unique(ext)
+    let prelude = ""
+    let extra = nil
+    if (vars ~= nil) {
+      let made = inject(vars)
+      prelude = made.prelude
+      extra = made.file
+    }
+    fs.write(script, prelude .. "\n" .. code .. "\n")
+    let r = run(command() .. " " .. shq(script))
+    fs.remove(script)
+    if (extra ~= nil) {
+      fs.remove(extra)
+    }
+    check(r, name, hint)
+    return string.trim(r.out)
+  }
+
+  lang.run_file = func(path) {
+    let r = run(command() .. " " .. shq(path))
+    check(r, name, hint)
+    return string.trim(r.out)
+  }
+
+  lang.has = func(module) {
+    let r = run(command() .. " " .. check_arg(module))
+    return r.code == 0
+  }
+
+  if (wrap ~= nil) {
+    lang.call = func(expr, vars) {
+      let out = lang.eval(wrap(expr), vars)
+      return json.decode(last_line(out))
+    }
+  } else {
+    lang.call = func(expr, vars) {
+      error(name .. " does not support call(). Use eval() and print the result instead.")
+    }
+  }
+
+  return lang
+}
+
+let python_command = func() {
+  let venv = home .. "/.rabbit/venv/bin/python"
+  if (fs.exists(venv)) {
+    return shq(venv)
+  }
+  return os.getenv("RABBIT_PYTHON") or "python3"
+}
+
+let node_command = func() {
+  return "NODE_PATH=" .. shq(home .. "/.rabbit/node/node_modules") .. " " .. (os.getenv("RABBIT_NODE") or "node")
+}
+
+let lua_command = func() {
+  return "LUA_PATH=" .. shq(home .. "/.rabbit/lua/share/lua/5.4/?.lua;;") .. " " .. (os.getenv("RABBIT_LUA") or "lua")
+}
+
+let python_wrap = func(expr) {
+  return "import json as _rabbit_j\n_rabbit_r = (" .. expr .. ")\nprint(_rabbit_j.dumps(_rabbit_r))"
+}
+
+let node_wrap = func(expr) {
+  return "console.log(JSON.stringify(" .. expr .. "));"
+}
+
+bridge.python = make_lang("Python", python_command, ".py",
+  "Install Python 3, for example with: sudo apt install python3",
+  func(m) { return "-c " .. shq("import " .. m) },
+  python_inject, python_wrap)
+
+bridge.node = make_lang("Node.js", node_command, ".js",
+  "Install Node.js, for example with: sudo apt install nodejs",
+  func(m) { return "-e " .. shq("require('" .. m .. "')") },
+  node_inject, node_wrap)
+
+bridge.lua = make_lang("Lua", lua_command, ".lua",
+  "Install Lua, for example with: sudo apt install lua5.4",
+  func(m) { return "-e " .. shq("require('" .. m .. "')") },
+  lua_inject, nil)
+
+return bridge

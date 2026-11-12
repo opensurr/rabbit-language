@@ -1,0 +1,112 @@
+
+let html = {}
+
+let VOID = {br = true, hr = true, img = true, meta = true, link = true,
+            input = true, source = true, wbr = true}
+
+html.escape = func(text) {
+  let s = tostring(text)
+  s = string.replace(s, "&", "&amp;")
+  s = string.replace(s, "<", "&lt;")
+  s = string.replace(s, ">", "&gt;")
+  s = string.replace(s, "\"", "&quot;")
+  s = string.replace(s, "'", "&#39;")
+  return s
+}
+
+html.text = func(text) {
+  return html.escape(text)
+}
+
+let attr_text = func(attrs) {
+  let out = ""
+  if (attrs == nil) {
+    return out
+  }
+  for key, value in attrs {
+    out = out .. " " .. key .. "=\"" .. html.escape(value) .. "\""
+  }
+  return out
+}
+
+html.el = func(tag, attrs, children) {
+  let open = "<" .. tag .. attr_text(attrs) .. ">"
+  if (VOID[tag]) {
+    return open
+  }
+  let inner = ""
+  if (type(children) == "array") {
+    for i, child in children {
+      inner = inner .. tostring(child)
+    }
+  } elseif (children ~= nil) {
+    inner = tostring(children)
+  }
+  return open .. inner .. "</" .. tag .. ">"
+}
+
+let common = ["html", "head", "body", "div", "span", "p", "h1", "h2", "h3", "h4",
+              "a", "ul", "ol", "li", "table", "thead", "tbody", "tr", "td", "th",
+              "section", "article", "header", "footer", "nav", "main", "button",
+              "form", "label", "strong", "em", "code", "pre", "title", "style",
+              "script", "select", "option", "textarea", "small", "blockquote"]
+
+for name in common {
+  html[name] = func(attrs, children) {
+    return html.el(name, attrs, children)
+  }
+}
+
+html.img = func(attrs) {
+  return html.el("img", attrs, nil)
+}
+
+html.br = func() {
+  return "<br>"
+}
+
+html.hr = func() {
+  return "<hr>"
+}
+
+html.page = func(opts) {
+  let body = ""
+  if (type(opts.body) == "array") {
+    body = table.concat(opts.body, "\n")
+  } elseif (opts.body ~= nil) {
+    body = tostring(opts.body)
+  }
+  let head = "<meta charset=\"utf-8\">\n"
+  head = head .. "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+  head = head .. "<title>" .. html.escape(opts.title or "Rabbit page") .. "</title>\n"
+  if (opts.css ~= nil) {
+    head = head .. "<style>\n" .. opts.css .. "</style>\n"
+  }
+  if (opts.head ~= nil) {
+    head = head .. opts.head .. "\n"
+  }
+  return "<!DOCTYPE html>\n<html lang=\"" .. (opts.lang or "en") .. "\">\n"
+         .. "<head>\n" .. head .. "</head>\n"
+         .. "<body>\n" .. body .. "\n</body>\n</html>\n"
+}
+
+html.css = func(rules) {
+  let out = ""
+  for i, rule in rules {
+    out = out .. rule.selector .. " {\n"
+    for prop, value in rule.style {
+      out = out .. "  " .. string.replace(prop, "_", "-") .. ": " .. value .. ";\n"
+    }
+    out = out .. "}\n\n"
+  }
+  return out
+}
+
+html.write = func(path, doc) {
+  if (not fs.write(path, doc)) {
+    error("could not write the file " .. path)
+  }
+  return path
+}
+
+return html
