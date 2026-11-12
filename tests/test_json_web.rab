@@ -1,0 +1,7 @@
+let json = getlib("json")
+local_text = json.encode({name = "Bunny", tags = ["a", "b"], ok = true, n = 2.5})
+print(local_text)
+let back = json.decode(local_text)
+print(back.name, back.tags[1], back.ok, back.n)
+let web = getlib("web")
+print(web.html("<h1>x</h1>").type)

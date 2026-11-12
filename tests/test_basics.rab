@@ -1,0 +1,6 @@
+print(7 / 2, 2 * 3 + 4, -7 % 3, 1 / 3)
+print("n = " .. 5, 0.1 + 0.2, 100000000000)
+print(true and "yes" or "no", nil ?? "fallback", 0 ?? 5)
+if (0) { print("0 is true") }
+if (nil) { print("never") } else { print("nil is false") }
+print(type(nil), type(1), type("s"), type([]), type({}), type(print))

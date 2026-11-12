@@ -1,0 +1,12 @@
+local_ok = pcall(func() { return 1 + "a" })
+print(pcall(func() { return 1 + "a" }).ok)
+print(string.gsub(pcall(func() { return 10 / 0 }).error, "^.-error: ", ""))
+print(pcall(func() { assert(false, "custom message") }).error ~= nil)
+print(pcall(func() { error("boom") }).ok)
+func down(n) { return down(n + 1) }
+print(pcall(func() { return down(0) }).ok)
+print(pcall(func() { return string.rep("abcdefghij", 1e9) }).ok)
+print(pcall(func() { return http.get("-o/tmp/x") }).ok)
+print(pcall(func() { return http.post("file:///etc/passwd", "") }).ok)
+print(string.sub("hello", 1, 3), [1, 2][1e300], string.char(65))
+print("still running")

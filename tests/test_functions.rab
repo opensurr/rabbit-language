@@ -1,0 +1,32 @@
+func make_counter() {
+  let count = 0
+  return func() {
+    count += 1
+    return count
+  }
+}
+let c = make_counter()
+print(c(), c(), c())
+func fib(n) {
+  if (n < 2) { return n }
+  return fib(n - 1) + fib(n - 2)
+}
+print(fib(15))
+let fs2 = []
+for i = 1, 3 { fs2:push(func() { return i }) }
+print(fs2[0](), fs2[1](), fs2[2]())
+for i = 1, 3 {
+  let x = i * 10
+  print(x)
+}
+let total = 0
+for i = 10, 1, -3 { total += i }
+print(total)
+let n = 0
+while (true) {
+  n += 1
+  if (n == 4) { break }
+}
+let k = 0
+repeat { k += 1 } until (k >= 3)
+print(n, k)

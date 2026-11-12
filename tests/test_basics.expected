@@ -1,0 +1,6 @@
+3.5	10	-1	0.3333333333
+n = 5	0.3	100000000000
+yes	fallback	0
+0 is true
+nil is false
+nil	number	string	array	table	function

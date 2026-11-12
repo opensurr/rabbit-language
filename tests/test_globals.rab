@@ -1,0 +1,5 @@
+setglobal("score", 42)
+func double() { return score * 2 }
+print(getglobal("score"), hasglobal("score"), double())
+setgenv({bonus = 7})
+print(bonus, getgenv().score ~= nil)

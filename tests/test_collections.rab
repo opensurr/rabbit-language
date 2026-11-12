@@ -1,0 +1,14 @@
+let data = [10, 20, 30]
+data:push(40)
+print(#data, data[0], data[#data - 1], data.length)
+print(table.remove(data), table.concat(data, "-"))
+table.sort(data, func(a, b) { return a > b })
+print(table.concat(data, ","))
+let user = {name = "Bunny", age = 16}
+user.city = "Amsterdam"
+user["level"] = 3
+user.age = nil
+for k, v in user { print(k, v) }
+for i, v in data { print(i, v) }
+print(table.find(data, 20), table.contains(data, 99))
+print(table.concat(table.map([1, 2, 3], func(x) { return x * x }), ","))

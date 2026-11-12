@@ -1,0 +1,4 @@
+let langs = getlib("bridge")
+print(langs.python.eval("print(2 ** 10)"))
+print(langs.python.call("sum(values)", {values = [1, 2, 3]}))
+print(langs.python.eval("print(name.upper())", {name = "rabbit"}))
