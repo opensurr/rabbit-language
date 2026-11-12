@@ -89,4 +89,3 @@ Read [SECURITY.md](SECURITY.md) before running programs you did not write.
 MIT. See [LICENSE](LICENSE).
 ```
 
-Key improvements: clearer intro, consistent bullet formatting, corrected typos like “carefull,” and a stronger but still accurate security section that does **not** claim Rabbit is secure or sandboxed.
