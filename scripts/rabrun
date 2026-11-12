@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "$#" -eq 0 ]; then
+    echo "usage: rabrun <file.rab>"
+    exit 1
+fi
+exec rabbit "$@"

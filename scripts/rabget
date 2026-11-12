@@ -1,0 +1,83 @@
+#!/bin/sh
+
+RABBIT_HOME="${RABBIT_HOME:-$HOME/.rabbit}"
+
+usage() {
+    cat << 'USAGE'
+usage: rabget [python|node|lua] <package> [<package> ...]
+       rabget list
+USAGE
+}
+
+if [ $
+    usage
+    exit 1
+fi
+
+lang=python
+case "$1" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    python|node|lua)
+        lang="$1"
+        shift
+        ;;
+    list)
+        echo "Python packages:"
+        if [ -x "$RABBIT_HOME/venv/bin/python" ]; then
+            "$RABBIT_HOME/venv/bin/python" -m pip list
+        else
+            echo "  (none yet)"
+        fi
+        echo "Node.js packages:"
+        ls "$RABBIT_HOME/node/node_modules" 2>/dev/null || echo "  (none yet)"
+        echo "Lua rocks:"
+        ls "$RABBIT_HOME/lua" 2>/dev/null || echo "  (none yet)"
+        exit 0
+        ;;
+esac
+
+if [ $
+    echo "rabget: give at least one package name"
+    usage
+    exit 1
+fi
+
+case "$lang" in
+    python)
+        if ! command -v python3 >/dev/null 2>&1; then
+            echo "rabget: python3 is not installed. Install it first (for example: sudo apt install python3)."
+            exit 1
+        fi
+        if [ ! -x "$RABBIT_HOME/venv/bin/python" ]; then
+            mkdir -p "$RABBIT_HOME"
+            echo "rabget: creating a private Python environment in $RABBIT_HOME/venv"
+            if ! python3 -m venv "$RABBIT_HOME/venv"; then
+                echo "rabget: could not create the environment."
+                echo "        On Debian/Ubuntu install it with: sudo apt install python3-venv"
+                exit 1
+            fi
+        fi
+        "$RABBIT_HOME/venv/bin/python" -m pip install "$@" || exit 1
+        ;;
+    node)
+        if ! command -v npm >/dev/null 2>&1; then
+            echo "rabget: npm is not installed. Install Node.js first."
+            exit 1
+        fi
+        mkdir -p "$RABBIT_HOME/node"
+        npm install --prefix "$RABBIT_HOME/node" "$@" || exit 1
+        ;;
+    lua)
+        if ! command -v luarocks >/dev/null 2>&1; then
+            echo "rabget: luarocks is not installed. Install it first (for example: sudo apt install luarocks)."
+            exit 1
+        fi
+        for rock in "$@"; do
+            luarocks --tree "$RABBIT_HOME/lua" install "$rock" || exit 1
+        done
+        ;;
+esac
+echo "rabget: done."
